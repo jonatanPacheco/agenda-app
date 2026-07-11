@@ -2,20 +2,47 @@ import AppointmentCard from "@/src/components/AppointmentCard";
 import { Button } from "@/src/components/Button";
 import { useAppointments } from "@/src/contexts/AppointmentContext";
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function Appointments() {
   const router = useRouter();
-  const { appointments } = useAppointments();
+  const {
+    appointments,
+    loading,
+    user,
+    toggleAppointmentStatus,
+    deleteAppointment,
+  } = useAppointments();
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007aff" />
+        <Text style={styles.loadingText}>Carregando agendamentos...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Meus Agendamentos</Text>
-        <Button
-          title="+ Novo Agendamento"
-          onPress={() => router.push("/new-appointment")}
-        />
+        <Text style={styles.headerTitle}>
+          {user?.role === "admin"
+            ? "Painel Administrativo"
+            : "Meus Agendamentos"}
+        </Text>
+        {user?.role === "client" && (
+          <Button
+            title="+ Novo Agendamento"
+            onPress={() => router.push("/new-appointment")}
+          />
+        )}
       </View>
 
       {appointments.length === 0 ? (
@@ -28,10 +55,14 @@ export default function Appointments() {
         appointments.map((item) => (
           <AppointmentCard
             key={item.id}
+            id={item.id}
             providerId={item.providerId}
             serviceName={item.serviceName}
             date={item.date}
             status={item.status}
+            userRole={user?.role || "client"}
+            toggleAppointmentStatus={toggleAppointmentStatus}
+            deleteAppointment={deleteAppointment}
           />
         ))
       )}
@@ -40,6 +71,19 @@ export default function Appointments() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+
   container: {
     padding: 16,
     alignItems: "center",
