@@ -34,6 +34,7 @@ interface AppoitmentContextData {
   ) => void;
   toggleAppointmentStatus: (id: string) => void;
   deleteAppointment: (id: string) => void;
+  checkAdminAccess: (user: User | null) => boolean;
 }
 
 const AppointmentContext = createContext<AppoitmentContextData>(
@@ -93,6 +94,10 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
 
     setUser(mockUser);
     await AsyncStorage.setItem(USER_KEY, JSON.stringify(mockUser));
+  };
+
+  const checkAdminAccess = (user: User | null): boolean => {
+    return user?.role === "admin";
   };
 
   const logout = async () => {
@@ -171,6 +176,7 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
         addAppointment,
         toggleAppointmentStatus,
         deleteAppointment,
+        checkAdminAccess,
       }}
     >
       {children}
